@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahdimg AI - Futuristic Image Generator</title>
+    <link rel="icon" type="image/png" href="favicon .png">
+    <link rel="stylesheet" href="img.css">
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-logo">Mahdimg AI</div>
+            <div class="welcome-tagline">Transform your imagination into stunning visuals</div>
+            <div class="welcome-features">
+                <div class="feature">
+                    <span>🎨</span> AI-Powered Image Generation
+                </div>
+                <div class="feature">
+                    <span>⚡</span> Fast & Efficient
+                </div>
+                <div class="feature">
+                    <span>💾</span> Save Your Creations
+                </div>
+                <div class="feature">
+                    <span>🔧</span> Customizable Settings
+                </div>
+            </div>
+            <button class="btn" id="getStartedBtn">Get Started</button>
+        </div>
+    </div>
+    
+    <!-- Gallery Modal -->
+    <div class="gallery-modal" id="galleryModal">
+        <button class="gallery-close" id="galleryClose">×</button>
+        <div class="gallery-content">
+            <img class="gallery-image" id="galleryImage" alt="Gallery Image">
+            <div class="gallery-prompt" id="galleryPrompt"></div>
+        </div>
+    </div>
+    
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="logo">Mahdimg AI</h1>
+            <p class="tagline">Transform your imagination into stunning visuals</p>
+        </header>
+        
+        <main class="main-content">
+            <section class="input-panel" aria-labelledby="input-panel-title">
+                <h2 id="input-panel-title" class="sr-only">Image Generation Settings</h2>
+                
+                <div class="form-group">
+                    <label for="prompt">Image Prompt</label>
+                    <textarea id="prompt" placeholder="Describe the image you want to generate..." aria-required="true"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="negativePrompt">Negative Prompt (what to avoid)</label>
+                    <textarea id="negativePrompt" placeholder="Elements you don't want in the image..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="style">Art Style</label>
+                    <select id="style">
+                        <option value="(No style)">No Style</option>
+                        <option value="Realistic">Realistic</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Anime">Anime</option>
+                        <option value="Cyberpunk">Cyberpunk</option>
+                        <option value="Minimalist">Minimalist</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guidanceScale">Guidance Scale: <span id="guidanceValue" class="slider-value">7.5</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="guidanceScale" min="1" max="20" step="0.1" value="7.5" class="slider" aria-valuetext="Guidance scale set to 7.5">
+                    </div>
+                </div>
+                
+                <button class="toggle-advanced" id="toggleAdvanced" aria-expanded="false">
+                    Advanced Options <i>▼</i>
+                </button>
+                
+                <div class="advanced-options" id="advancedOptions" role="region" aria-labelledby="advanced-options-title">
+                    <h3 id="advanced-options-title" class="sr-only">Advanced Options</h3>
+                    <div class="form-group">
+                        <label for="width">Width</label>
+                        <input type="number" id="width" value="512" min="256" max="1024" step="64">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="height">Height</label>
+                        <input type="number" id="height" value="512" min="256" max="1024" step="64">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="steps">Generation Steps</label>
+                        <input type="number" id="steps" value="20" min="10" max="50">
+                    </div>
+                </div>
+                
+                <button id="generateBtn" class="btn" aria-label="Generate image based on current settings">Generate Image</button>
+            </section>
+            
+            <section class="output-panel" aria-labelledby="output-panel-title">
+                <h2 id="output-panel-title" class="sr-only">Generated Image</h2>
+                <div class="image-placeholder" id="imagePlaceholder">
+                    <i>🖼️</i>
+                    <span>Your generated image will appear here</span>
+                </div>
+                <div class="skeleton-loader" id="skeletonLoader"></div>
+                <img class="generated-image" id="generatedImage" alt="Generated Image" aria-live="polite">
+                <div class="loading" id="loading" role="status" aria-live="polite">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <span>Generating your image...</span>
+                </div>
+            </section>
+        </main>
+        
+        <section class="history-panel" aria-labelledby="history-title">
+            <h2 class="history-title" id="history-title">Generation History</h2>
+            <div class="history-grid" id="historyGrid">
+                <!-- History items will be added here dynamically -->
+            </div>
+        </section>
+        
+        <footer>
+            <p>Mahdimg AI Image Generator | Powered by Advanced AI Technology</p>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification" role="alert" aria-live="assertive">
+        <span id="notificationText"></span>
+    </div>
+    <script src="img.js"></script>
+</body>
+</html>
