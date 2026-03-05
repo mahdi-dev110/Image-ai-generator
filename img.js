@@ -1,347 +1,349 @@
-// DOM Elements
-const promptInput = document.getElementById('prompt');
-const negativePromptInput = document.getElementById('negativePrompt');
-const styleSelect = document.getElementById('style');
-const guidanceScale = document.getElementById('guidanceScale');
-const guidanceValue = document.getElementById('guidanceValue');
-const generateBtn = document.getElementById('generateBtn');
-const imagePlaceholder = document.getElementById('imagePlaceholder');
-const generatedImage = document.getElementById('generatedImage');
-const loading = document.getElementById('loading');
-const historyGrid = document.getElementById('historyGrid');
-const notification = document.getElementById('notification');
-const notificationText = document.getElementById('notificationText');
-const toggleAdvanced = document.getElementById('toggleAdvanced');
-const advancedOptions = document.getElementById('advancedOptions');
-const welcomeScreen = document.getElementById('welcomeScreen');
-const getStartedBtn = document.getElementById('getStartedBtn');
-const galleryModal = document.getElementById('galleryModal');
-const galleryImage = document.getElementById('galleryImage');
-const galleryPrompt = document.getElementById('galleryPrompt');
-const galleryClose = document.getElementById('galleryClose');
-const skeletonLoader = document.getElementById('skeletonLoader');
+const UI = {
+    form: document.getElementById('generator-form'),
+    prompt: document.getElementById('prompt'),
+    style: document.getElementById('style'),
+    width: document.getElementById('width'),
+    height: document.getElementById('height'),
+    generateBtn: document.getElementById('generateBtn'),
 
-// API Configuration - Using your actual API
-const apiConfig = {
-    url: 'https://ai-image-generator-free.p.rapidapi.com/generate/stream',
-    key: 'd7dc4fd514msh8bee676242d03aap1fbc81jsn24e8c880075e',
-    host: 'ai-image-generator-free.p.rapidapi.com'
+    states: {
+        placeholder: document.getElementById('placeholderState'),
+        loading: document.getElementById('loadingState'),
+        result: document.getElementById('resultState')
+    },
+
+    generatedImage: document.getElementById('generatedImage'),
+
+    toggleAdvanced: document.getElementById('toggleAdvanced'),
+    advancedOptions: document.getElementById('advancedOptions'),
+
+    downloadBtn: document.getElementById('downloadBtn'),
+    expandBtn: document.getElementById('expandBtn'),
+
+    historyTrack: document.getElementById('historyTrack'),
+    clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+
+
+    lightbox: document.getElementById('lightboxModal'),
+    lightboxImg: document.getElementById('lightboxImage'),
+    lightboxCaption: document.getElementById('lightboxCaption'),
+    closeModal: document.getElementById('closeModal'),
+    toastContainer: document.getElementById('toastContainer'),
+
+
+    particles: document.getElementById('particles')
 };
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function () {
-    createParticles();
-    updateGuidanceValue();
-    loadHistory();
 
-    // Check if user has seen welcome screen before
-    const hasSeenWelcome = localStorage.getItem('mahdiAIHasSeenWelcome');
-    if (hasSeenWelcome) {
-        welcomeScreen.style.display = 'none';
-    } else {
-        welcomeScreen.style.display = 'flex';
-    }
 
-    // Event Listeners
-    guidanceScale.addEventListener('input', updateGuidanceValue);
-    generateBtn.addEventListener('click', generateImage);
-    toggleAdvanced.addEventListener('click', toggleAdvancedOptions);
-    getStartedBtn.addEventListener('click', closeWelcomeScreen);
-    galleryClose.addEventListener('click', closeGallery);
 
-    // Close gallery when clicking outside the image
-    galleryModal.addEventListener('click', function (e) {
-        if (e.target === galleryModal) {
-            closeGallery();
+const APP_STATE = {
+    isGenerating: false,
+    currentImageOriginalUrl: null,
+    history: JSON.parse(localStorage.getItem('mahdimg_history')) || []
+};
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    initParticles();
+    renderHistory();
+
+
+    UI.advancedOptions.classList.add('hidden');
+
+
+    UI.form.addEventListener('submit', handleGenerate);
+    UI.toggleAdvanced.addEventListener('click', toggleAdvancedPanel);
+
+
+    UI.downloadBtn.addEventListener('click', handleDownload);
+    UI.expandBtn.addEventListener('click', () => openLightbox(UI.generatedImage.src, UI.prompt.value));
+
+
+    UI.clearHistoryBtn.addEventListener('click', clearHistory);
+
+
+    UI.closeModal.addEventListener('click', closeLightbox);
+    UI.lightbox.addEventListener('click', (e) => {
+        if (e.target === UI.lightbox) closeLightbox();
+    });
+
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && UI.lightbox.classList.contains('active')) {
+            closeLightbox();
         }
     });
 
-    // Accessibility: Make sure screen readers announce when image is generated
-    generatedImage.addEventListener('load', function () {
-        // This will be announced by screen readers due to aria-live="polite"
-    });
+    showToast('Welcome to Mahdimg AI! ✨', 'info');
 });
 
-// Close welcome screen
-function closeWelcomeScreen() {
-    welcomeScreen.style.opacity = '0';
-    welcomeScreen.style.visibility = 'hidden';
-    localStorage.setItem('mahdiAIHasSeenWelcome', 'true');
-}
 
-// Open gallery with image and prompt
-function openGallery(imageUrl, prompt) {
-    galleryImage.src = imageUrl;
-    galleryPrompt.textContent = prompt;
-    galleryModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
-}
 
-// Close gallery
-function closeGallery() {
-    galleryModal.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Re-enable scrolling
-}
 
-// Update guidance scale value display
-function updateGuidanceValue() {
-    guidanceValue.textContent = guidanceScale.value;
-    guidanceScale.setAttribute('aria-valuetext', `Guidance scale set to ${guidanceScale.value}`);
-}
 
-// Toggle advanced options
-function toggleAdvancedOptions() {
-    const isExpanded = advancedOptions.style.display === 'block';
-    advancedOptions.style.display = isExpanded ? 'none' : 'block';
-    toggleAdvanced.classList.toggle('active');
-    toggleAdvanced.setAttribute('aria-expanded', !isExpanded);
-}
+/**
+ * Handles the generation process
+ */
+async function handleGenerate(e) {
+    if (e) e.preventDefault();
+    if (APP_STATE.isGenerating) return;
 
-// Create floating particles for background
-function createParticles() {
-    const particlesContainer = document.getElementById('particles');
-    const particleCount = 30;
-
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-
-        // Random properties
-        const size = Math.random() * 5 + 1;
-        const posX = Math.random() * 100;
-        const posY = Math.random() * 100;
-        const delay = Math.random() * 15;
-        const duration = Math.random() * 10 + 10;
-
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${posX}%`;
-        particle.style.top = `${posY}%`;
-        particle.style.animationDelay = `${delay}s`;
-        particle.style.animationDuration = `${duration}s`;
-
-        // Random color
-        const colors = ['#00f3ff', '#9d4edd', '#ff6b6b', '#f9c74f'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.background = color;
-
-        particlesContainer.appendChild(particle);
-    }
-}
-
-// Show notification
-function showNotification(message, type = 'info') {
-    notificationText.textContent = message;
-    notification.className = 'notification'; // Reset classes
-    notification.classList.add(type);
-    notification.classList.add('show');
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 4000);
-}
-
-// Generate image using your actual API
-async function generateImage() {
-    const prompt = promptInput.value.trim();
-
-    if (!prompt) {
-        showNotification('Please enter a prompt for the image', 'error');
-        promptInput.focus();
+    const basePrompt = UI.prompt.value.trim();
+    if (!basePrompt) {
+        showToast('Please describe the image you want to create.', 'error');
+        UI.prompt.focus();
         return;
     }
 
-    // Show loading state with skeleton loader
-    generateBtn.disabled = true;
-    imagePlaceholder.style.display = 'none';
-    generatedImage.style.display = 'none';
-    loading.style.display = 'flex';
-    skeletonLoader.style.display = 'block';
+
+    const styleModifier = UI.style.value;
+    const finalPrompt = basePrompt + styleModifier;
+
+
+    const w = UI.width.value || 1024;
+    setViewState('loading');
+    APP_STATE.isGenerating = true;
+    UI.generateBtn.disabled = true;
 
     try {
-        // Prepare request body according to API requirements
-        const requestBody = {
-            prompt: prompt,
-            negativePrompt: negativePromptInput.value || undefined,
-            guidanceScale: parseFloat(guidanceScale.value),
-            style: styleSelect.value !== '(No style)' ? styleSelect.value : undefined,
-            width: parseInt(document.getElementById('width').value) || 512,
-            height: parseInt(document.getElementById('height').value) || 512,
-            steps: parseInt(document.getElementById('steps').value) || 20
-        };
+        // Generate image using Puter AI
+        const generatedImgElement = await puter.ai.txt2img(finalPrompt);
+        const imageUrl = generatedImgElement.src;
 
-        // Remove undefined values
-        Object.keys(requestBody).forEach(key => {
-            if (requestBody[key] === undefined) {
-                delete requestBody[key];
-            }
+        // Image successfully loaded
+        UI.generatedImage.src = imageUrl;
+        APP_STATE.currentImageOriginalUrl = imageUrl;
+
+        setViewState('result');
+        showToast('Masterpiece generated successfully! 🎨', 'success');
+
+
+        addToHistory({
+            url: imageUrl,
+            prompt: basePrompt,
+            timestamp: Date.now()
         });
-
-        const response = await fetch(apiConfig.url, {
-            method: 'POST',
-            headers: {
-                'x-rapidapi-key': apiConfig.key,
-                'x-rapidapi-host': apiConfig.host,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status} - ${response.statusText}`);
-        }
-
-        // Try to parse the response as JSON first
-        let result;
-        const responseText = await response.text();
-
-        try {
-            result = JSON.parse(responseText);
-        } catch (e) {
-            // If it's not JSON, try to extract URL from text
-            const imageUrlMatch = responseText.match(/https?:\/\/[^\s"']+/);
-            if (imageUrlMatch) {
-                result = { imageUrl: imageUrlMatch[0] };
-            } else {
-                throw new Error('Could not parse API response');
-            }
-        }
-
-        // Check if we have an image URL in the response
-        const imageUrl = result.imageUrl || result.url || result.data?.url;
-
-        if (!imageUrl) {
-            throw new Error('No image URL found in API response');
-        }
-
-        // Verify the image URL is valid
-        await verifyImageUrl(imageUrl);
-
-        // Hide skeleton and show the generated image
-        skeletonLoader.style.display = 'none';
-        generatedImage.src = imageUrl;
-        generatedImage.style.display = 'block';
-        loading.style.display = 'none';
-
-        // Save to history
-        saveToHistory(prompt, imageUrl);
-
-        showNotification('Image generated successfully!', 'success');
 
     } catch (error) {
-        console.error('Error generating image:', error);
-        loading.style.display = 'none';
-        skeletonLoader.style.display = 'none';
-        imagePlaceholder.style.display = 'flex';
-
-        // Provide more specific error messages
-        let errorMessage = 'Error generating image';
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Network error: Please check your connection';
-        } else if (error.message.includes('API error')) {
-            errorMessage = 'API service error: Please try again later';
-        } else {
-            errorMessage = error.message;
-        }
-
-        showNotification(errorMessage, 'error');
+        setViewState('placeholder');
+        showToast('Failed to generate image. Please try again.', 'error');
+        console.error('Generation Error:', error);
     } finally {
-        generateBtn.disabled = false;
+        APP_STATE.isGenerating = false;
+        UI.generateBtn.disabled = false;
     }
 }
 
-// Verify that the image URL is accessible
-async function verifyImageUrl(url) {
+/**
+ * Preloads an image to ensure it's fully downloaded before showing in UI
+ */
+function preloadImage(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(url);
-        img.onerror = () => reject(new Error('Generated image failed to load'));
+        img.onerror = () => reject(new Error('Image failed to load'));
         img.src = url;
     });
 }
 
-// Save generated image to history
-function saveToHistory(prompt, imageUrl) {
-    const history = JSON.parse(localStorage.getItem('mahdiAIHistory') || '[]');
 
-    // Add new item to beginning of array
-    history.unshift({
-        prompt: prompt,
-        imageUrl: imageUrl,
-        timestamp: new Date().toISOString()
-    });
 
-    // Keep only last 10 items
-    if (history.length > 10) {
-        history.splice(10);
-    }
 
-    // Save to localStorage
-    localStorage.setItem('mahdiAIHistory', JSON.stringify(history));
 
-    // Update history display
-    loadHistory();
+/**
+ * Switches the central stage view
+ */
+function setViewState(state) {
+    UI.states.placeholder.style.display = 'none';
+    UI.states.loading.style.display = 'none';
+    UI.states.result.style.display = 'none';
+
+    if (state === 'placeholder') UI.states.placeholder.style.display = 'flex';
+    if (state === 'loading') UI.states.loading.style.display = 'flex';
+    if (state === 'result') UI.states.result.style.display = 'block';
 }
 
-// Delete history item
-function deleteHistoryItem(index) {
-    const history = JSON.parse(localStorage.getItem('mahdiAIHistory') || '[]');
-
-    if (index >= 0 && index < history.length) {
-        history.splice(index, 1);
-        localStorage.setItem('mahdiAIHistory', JSON.stringify(history));
-        loadHistory();
-        showNotification('Image deleted from history', 'success');
+function toggleAdvancedPanel() {
+    const isHidden = UI.advancedOptions.classList.contains('hidden');
+    if (isHidden) {
+        UI.advancedOptions.classList.remove('hidden');
+        UI.toggleAdvanced.setAttribute('aria-expanded', 'true');
+    } else {
+        UI.advancedOptions.classList.add('hidden');
+        UI.toggleAdvanced.setAttribute('aria-expanded', 'false');
     }
 }
 
-// Load history from localStorage
-function loadHistory() {
-    const history = JSON.parse(localStorage.getItem('mahdiAIHistory') || '[]');
-    historyGrid.innerHTML = '';
 
-    if (history.length === 0) {
-        historyGrid.innerHTML = '<div class="empty-history">No generation history yet. Your generated images will appear here.</div>';
+
+
+function addToHistory(item) {
+
+    APP_STATE.history.unshift(item);
+
+
+    if (APP_STATE.history.length > 15) {
+        APP_STATE.history.pop();
+    }
+
+
+    localStorage.setItem('mahdimg_history', JSON.stringify(APP_STATE.history));
+
+
+    renderHistory();
+}
+
+function renderHistory() {
+    UI.historyTrack.innerHTML = '';
+
+    if (APP_STATE.history.length === 0) {
+        UI.historyTrack.innerHTML = '<p style="color: rgba(255,255,255,0.4); margin: auto;">No history yet</p>';
         return;
     }
 
-    history.forEach((item, index) => {
-        const historyItem = document.createElement('div');
-        historyItem.classList.add('history-item');
-        historyItem.setAttribute('role', 'button');
-        historyItem.setAttribute('tabindex', '0');
-        historyItem.setAttribute('aria-label', `View image generated from prompt: ${item.prompt}`);
+    APP_STATE.history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+            <img src="${item.url}" alt="${item.prompt}" loading="lazy"/>
+            <div class="history-overlay">${item.prompt}</div>
+        `;
 
-        historyItem.innerHTML = `
-                    <img src="${item.imageUrl}" alt="Generated image based on prompt: ${item.prompt}" 
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i>🖼️</i><div class=\\'prompt-preview\\'>Image failed to load</div>';">
-                    <div class="prompt-preview">${item.prompt.substring(0, 30)}${item.prompt.length > 30 ? '...' : ''}</div>
-                    <div class="history-item-actions">
-                        <button class="delete-btn" aria-label="Delete this image">×</button>
-                    </div>
-                `;
-
-        // Click and keyboard support for accessibility
-        historyItem.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('delete-btn')) {
-                openGallery(item.imageUrl, item.prompt);
-            }
+        div.addEventListener('click', () => {
+            openLightbox(item.url, item.prompt);
         });
 
-        historyItem.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openGallery(item.imageUrl, item.prompt);
-            }
-        });
-
-        // Delete button event
-        const deleteBtn = historyItem.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent triggering the gallery open
-            deleteHistoryItem(index);
-        });
-
-        historyGrid.appendChild(historyItem);
+        UI.historyTrack.appendChild(div);
     });
+}
+
+function clearHistory() {
+    if (confirm('Are you sure you want to clear your local history?')) {
+        APP_STATE.history = [];
+        localStorage.removeItem('mahdimg_history');
+        renderHistory();
+        showToast('History cleared', 'info');
+    }
+}
+
+
+
+
+
+async function handleDownload() {
+    if (!APP_STATE.currentImageOriginalUrl) return;
+
+    try {
+        const response = await fetch(APP_STATE.currentImageOriginalUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+
+        const safeName = UI.prompt.value.trim().substring(0, 20).replace(/[^a-z0-9]/gi, '_');
+        a.download = `MahdimgAI_${safeName}.png`;
+
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showToast('Image downloaded!', 'success');
+    } catch (e) {
+        console.error("Download failed:", e);
+
+        window.open(APP_STATE.currentImageOriginalUrl, '_blank');
+    }
+}
+
+function openLightbox(url, caption) {
+    UI.lightboxImg.src = url;
+    UI.lightboxCaption.textContent = caption;
+    UI.lightbox.classList.add('active');
+    UI.lightbox.setAttribute('aria-hidden', 'false');
+}
+
+function closeLightbox() {
+    UI.lightbox.classList.remove('active');
+    UI.lightbox.setAttribute('aria-hidden', 'true');
+
+    setTimeout(() => {
+        if (!UI.lightbox.classList.contains('active')) UI.lightboxImg.src = '';
+    }, 400);
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+
+    let iconSvg = '';
+    if (type === 'success') {
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="toast-icon" stroke="var(--success)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    } else if (type === 'error') {
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="toast-icon" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+    } else {
+        iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="toast-icon" stroke="var(--clr-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    }
+
+    toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+    UI.toastContainer.appendChild(toast);
+
+
+    setTimeout(() => {
+        toast.classList.add('removing');
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
+
+function initParticles() {
+    const particleCount = 20;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+
+
+        const size = Math.random() * 4 + 1;
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        const duration = Math.random() * 20 + 10;
+        const delay = Math.random() * 5;
+
+        particle.style.cssText = `
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}%;
+            top: ${y}%;
+            opacity: ${Math.random() * 0.3 + 0.1};
+            animation: float ${duration}s ease-in-out ${delay}s infinite alternate;
+        `;
+
+
+        const tint = Math.random();
+        if (tint > 0.8) particle.style.background = 'var(--clr-primary)';
+        else if (tint > 0.6) particle.style.background = 'var(--clr-secondary)';
+
+        UI.particles.appendChild(particle);
+    }
+
+
+    if (!document.getElementById('particle-keyframes')) {
+        const style = document.createElement('style');
+        style.id = 'particle-keyframes';
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translate(0, 0); }
+                100% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
