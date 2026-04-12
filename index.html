@@ -2,195 +2,295 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Generate stunning, futuristic AI images simply and efficiently.">
-    <title>Mahdimg AI - Futuristic Image Generator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
-
-    <link rel="icon" type="image/png" href="favicon .png">
-    <link rel="stylesheet" href="img.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Visigen — A powerful AI image generator. Paste your API key and generate stunning images from text prompts using FLUX, DALL-E, and more." />
+  <meta property="og:title" content="Visigen — AI Image Generator" />
+  <meta property="og:description"
+    content="Generate stunning AI images from text prompts. Supports Hugging Face and OpenAI providers." />
+  <title>Visigen — AI Image Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-<!--const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${w}&height=${h}&seed=${seed}&nologo=true`;-->
 
 <body>
-    <div class="background-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-    <div class="particles" id="particles"></div>
-
-    <div class="app-container">
-        <aside class="sidebar-controls" aria-label="Image Generation Controls">
-            <header class="sidebar-header">
-                <h1 class="logo">
-                    Mahdimg<span class="ai-badge">AI</span>
-                </h1>
-                <p class="tagline">Create anything you can imagine.</p>
-            </header>
-
-            <form id="generator-form" class="controls-form" onsubmit="return false;">
-                <div class="input-group">
-                    <label for="prompt">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                        </svg>
-                        Describe your image
-                    </label>
-                    <textarea id="prompt"
-                        placeholder="e.g., A futuristic cyberpunk city floating in clouds, vibrant neon lights, 8k resolution..."
-                        aria-required="true" autofocus></textarea>
-                </div>
-
-                <!-- Advanced Options Toggle -->
-                <div class="advanced-section">
-                    <button type="button" class="toggle-advanced" id="toggleAdvanced" aria-expanded="false"
-                        aria-controls="advancedOptions">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                        </svg>
-                        Advanced Fine-Tuning
-                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="m6 9 6 6 6-6" />
-                        </svg>
-                    </button>
-
-                    <div class="advanced-options" id="advancedOptions" role="region">
-                        <div class="input-group">
-                            <label for="style">Art Style Focus</label>
-                            <div class="custom-select">
-                                <select id="style">
-                                    <option value="">Auto / No Specific Style</option>
-                                    <option value=", masterpiece, highly detailed, realistic, 8k">Photorealistic
-                                    </option>
-                                    <option value=", anime style, studio ghibli, vivid colors">Anime</option>
-                                    <option value=", cyberpunk, neon lights, dark synthwave">Cyberpunk</option>
-                                    <option value=", fantasy art, concept art, magical atmosphere">Fantasy Concept
-                                    </option>
-                                    <option value=", minimalist, flat design, vector art">Minimalist Illustration
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="dimension-controls">
-                            <div class="input-group">
-                                <label for="width">Width (px)</label>
-                                <input type="number" id="width" value="1024" min="256" step="64">
-                            </div>
-                            <div class="input-group">
-                                <label for="height">Height (px)</label>
-                                <input type="number" id="height" value="1024" min="256" step="64">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" id="generateBtn" class="primary-btn">
-                    <span class="btn-text">Generate Masterpiece</span>
-                    <span class="btn-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="m5 12 7-7 7 7M12 19V5" />
-                        </svg>
-                    </span>
-                </button>
-            </form>
-
-            <footer class="sidebar-footer">
-                <p>Powered by free, lightning-fast AI endpoints.</p>
-            </footer>
-        </aside>
-
-        <!-- Main Workspace View -->
-        <main class="workspace">
-            <div class="output-container">
-                <div class="image-stage" id="imageStage">
-                    <!-- Default State -->
-                    <div class="placeholder-state" id="placeholderState">
-                        <div class="icon-ring">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                                <circle cx="9" cy="9" r="2" />
-                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                            </svg>
-                        </div>
-                        <h2>Awaiting Inspiration</h2>
-                        <p>Enter a prompt on the left to summon your creation.</p>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div class="loading-state" id="loadingState">
-                        <div class="scanning-loader">
-                            <div class="scan-line"></div>
-                        </div>
-                        <div class="loading-text">
-                            <span>Synthesizing pixels</span>
-                            <span class="dots">...</span>
-                        </div>
-                    </div>
-
-                    <!-- Result State -->
-                    <div class="result-state" id="resultState">
-                        <img id="generatedImage" alt="Generated Artwork" />
-                        <div class="image-overlay">
-                            <div class="image-actions">
-                                <button id="downloadBtn" class="action-btn" title="Download Image">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" x2="12" y1="15" y2="3" />
-                                    </svg>
-                                </button>
-                                <button id="expandBtn" class="action-btn" title="View Fullscreen">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Section -->
-            <section class="history-section" aria-labelledby="historyTitle">
-                <div class="history-header">
-                    <h2 id="historyTitle">Recent Creations</h2>
-                    <button id="clearHistoryBtn" class="text-btn">Clear All</button>
-                </div>
-                <div class="history-track" id="historyTrack">
-                    <!-- History items injected here -->
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Fullscreen Modal -->
-    <div class="lightbox-modal" id="lightboxModal" aria-hidden="true">
-        <button class="close-modal" id="closeModal" aria-label="Close modal">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="brand">
+        <span class="brand-logo">VISIGEN</span>
+        <span class="brand-dot"></span>
+        <span class="brand-sub">AI Image Studio</span>
+      </div>
+      <section class="panel" id="apiPanel">
+        <div class="panel-header">
+          <span class="panel-label">01 — API KEY</span>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="providerSelect">Provider</label>
+          <div class="select-wrap">
+            <select id="providerSelect" class="select-input">
+              <option value="huggingface">Hugging Face</option>
+              <option value="openai">OpenAI (DALL-E)</option>
+            </select>
+            <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
             </svg>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="apiKeyInput">
+            API Key
+            <a id="getKeyLink" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener"
+              class="get-key-link">Get key →</a>
+          </label>
+          <div class="key-input-wrap">
+            <input type="password" id="apiKeyInput" class="text-input" placeholder="Paste your API key here..."
+              autocomplete="off" spellcheck="false" />
+            <button class="eye-btn" id="eyeBtn" title="Show/hide key" aria-label="Toggle key visibility">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
+          <p class="field-hint" id="keyHint">Stored in memory only — never sent anywhere except the provider's API.</p>
+        </div>
+        <div class="field-group" id="modelGroup">
+          <label class="field-label" for="modelSelect">Model</label>
+          <div class="select-wrap">
+            <select id="modelSelect" class="select-input"></select>
+            <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <span class="panel-label">02 — PROMPT</span>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="promptInput">Describe your image</label>
+          <textarea id="promptInput" class="textarea-input" rows="4"
+            placeholder="A lone astronaut standing on a crimson alien planet, two moons on the horizon, dramatic lighting, photorealistic, 8K..."></textarea>
+        </div>
+        <div class="field-group" id="negativePromptGroup">
+          <label class="field-label" for="negativePromptInput">
+            Negative Prompt
+            <span class="optional-tag">optional</span>
+          </label>
+          <textarea id="negativePromptInput" class="textarea-input textarea-sm" rows="2"
+            placeholder="blurry, low quality, distorted, watermark..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Style Preset</label>
+          <div class="style-chips" id="styleChips">
+            <button class="chip active" data-style="">None</button>
+            <button class="chip" data-style=", photorealistic, RAW photo, DSLR, 8K, sharp focus">Photo</button>
+            <button class="chip" data-style=", anime style, Studio Ghibli, cel shading, vibrant">Anime</button>
+            <button class="chip"
+              data-style=", cyberpunk, neon lights, rain-soaked streets, dark synthwave">Cyber</button>
+            <button class="chip" data-style=", oil painting, Renaissance, fine art, museum quality">Oil</button>
+            <button class="chip" data-style=", watercolor, soft edges, pastel palette, artistic">Watercolor</button>
+            <button class="chip" data-style=", cinematic, film grain, anamorphic lens, dramatic shadows">Cinema</button>
+            <button class="chip" data-style=", pixel art, 16-bit, retro game, vibrant palette">Pixel</button>
+            <button class="chip" data-style=", dark fantasy, gothic, epic scale, hyper-detailed">Fantasy</button>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <span class="panel-label">03 — SETTINGS</span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Canvas Size</label>
+          <div class="size-grid" id="sizeGrid">
+            <button class="size-btn active" data-w="1024" data-h="1024">
+              <span class="size-icon size-square"></span>
+              <span>1:1</span>
+            </button>
+            <button class="size-btn" data-w="896" data-h="1152">
+              <span class="size-icon size-portrait"></span>
+              <span>3:4</span>
+            </button>
+            <button class="size-btn" data-w="1152" data-h="896">
+              <span class="size-icon size-landscape"></span>
+              <span>4:3</span>
+            </button>
+            <button class="size-btn" data-w="1344" data-h="768">
+              <span class="size-icon size-wide"></span>
+              <span>16:9</span>
+            </button>
+          </div>
+        </div>
+        <div id="hfControls">
+          <div class="field-group">
+            <label class="field-label" for="stepsRange">
+              Inference Steps
+              <span class="slider-val" id="stepsVal">28</span>
+            </label>
+            <input type="range" id="stepsRange" class="range-input" min="1" max="50" value="28" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="guidanceRange">
+              Guidance Scale
+              <span class="slider-val" id="guidanceVal">7.0</span>
+            </label>
+            <input type="range" id="guidanceRange" class="range-input" min="1" max="20" value="7" step="0.5" />
+          </div>
+        </div>
+        <div id="openaiControls" style="display:none;">
+          <div class="field-group">
+            <label class="field-label" for="dalleQuality">Quality</label>
+            <div class="select-wrap">
+              <select id="dalleQuality" class="select-input">
+                <option value="standard">Standard</option>
+                <option value="hd">HD</option>
+              </select>
+              <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="dalleStyle">Image Style</label>
+            <div class="select-wrap">
+              <select id="dalleStyle" class="select-input">
+                <option value="vivid">Vivid</option>
+                <option value="natural">Natural</option>
+              </select>
+              <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="generate-area">
+        <button class="generate-btn" id="generateBtn">
+          <span class="generate-btn-text" id="generateBtnText">Generate</span>
+          <span class="generate-btn-shortcut">⌘ Enter</span>
+          <span class="btn-shimmer"></span>
         </button>
-        <img id="lightboxImage" src="" alt="Fullscreen artwork" />
-        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
     </div>
-
-    <!-- Toast Notifications -->
-    <div class="toast-container" id="toastContainer" aria-live="polite"></div> <!-- Puter.js -->
-    <script src="https://js.puter.com/v2/"></script>
-    <script src="img.js"></script>
+  </aside>
+  <main class="workspace" id="workspace">
+    <div class="mobile-header">
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <span class="mobile-brand">VISIGEN</span>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-card" id="canvasCard">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-grid">
+            <div class="empty-cell"></div>
+            <div class="empty-cell"></div>
+            <div class="empty-cell"></div>
+            <div class="empty-cell"></div>
+          </div>
+          <div class="empty-text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <h2>Your canvas is empty</h2>
+            <p>Configure your API key and write a prompt<br />to generate your first image.</p>
+          </div>
+        </div>
+        <div class="loading-state" id="loadingState" style="display:none;">
+          <div class="loading-ring">
+            <div class="ring-segment"></div>
+            <div class="ring-segment"></div>
+            <div class="ring-segment"></div>
+          </div>
+          <p class="loading-label" id="loadingLabel">Initializing model...</p>
+          <div class="loading-bar-wrap">
+            <div class="loading-bar" id="loadingBar"></div>
+          </div>
+        </div>
+        <div class="error-state" id="errorState" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <h2>Generation Failed</h2>
+          <p id="errorMsg">An unexpected error occurred.</p>
+          <button class="retry-btn" id="retryBtn">Try Again</button>
+        </div>
+        <div class="result-state" id="resultState" style="display:none;">
+          <img id="generatedImage" class="generated-img" alt="Generated image" />
+          <div class="image-overlay" id="imageOverlay">
+            <div class="overlay-actions">
+              <button class="overlay-btn" id="downloadBtn" title="Download">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download
+              </button>
+              <button class="overlay-btn" id="fullscreenBtn" title="Fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+                Fullscreen
+              </button>
+              <button class="overlay-btn" id="variationBtn" title="New Variation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="17 1 21 5 17 9" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <polyline points="7 23 3 19 7 15" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+                Variation
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="prompt-recap" id="promptRecap" style="display:none;">
+        <span class="recap-label">PROMPT</span>
+        <p class="recap-text" id="recapText"></p>
+      </div>
+    </div>
+    <section class="history-section" id="historySection" style="display:none;">
+      <div class="history-header">
+        <h3 class="history-title">Recent Generations</h3>
+        <button class="clear-btn" id="clearBtn">Clear all</button>
+      </div>
+      <div class="history-grid" id="historyGrid"></div>
+    </section>
+  </main>
+  <div class="lightbox" id="lightbox" style="display:none;" aria-modal="true" role="dialog"
+    aria-label="Fullscreen image view">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close fullscreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+    <img id="lightboxImg" class="lightbox-img" src="" alt="Fullscreen generated image" />
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <script src="app.js"></script>
 </body>
 
 </html>
